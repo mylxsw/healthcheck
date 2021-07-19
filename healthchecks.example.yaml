@@ -1,0 +1,52 @@
+worker_num: 3
+healthchecks:
+- name: baidu
+  check_interval: 60
+  loss_threshold: 120
+  check_type: http
+  http:
+    method: GET
+    url: https://www.baidu.com
+    headers:
+    - key: ContentType
+      value: application/json
+    body: ""
+    timeout: 30
+- name: google
+  check_type: http
+  http:
+    url: https://www.google.com
+- name: failed-demo
+  check_type: http
+  http:
+    url: http://192.168.10.45:5815/health
+discoveries:
+- type: consul
+  consul_scheme: http
+  consul_addr: 127.0.0.1:8500
+  consul_dc: default
+  filter: |
+    "php" in Tags
+  template:
+    name: ""
+    check_interval: 30
+    loss_threshold: 60
+    check_type: http
+    http:
+      method: GET
+      url: "tmpl: http://{{ .ServiceAddress }}:{{ .ServicePort }}/health"
+- type: consul
+  consul_scheme: http
+  consul_addr: 127.0.0.1:8500
+  consul_dc: default
+  filter: |
+    "with_metrics_java" in Tags
+  template:
+    name: ""
+    check_interval: 30
+    loss_threshold: 60
+    check_type: http
+    http:
+      method: GET
+      url: "tmpl: http://{{ .ServiceAddress }}:{{ .ServicePort }}/actuator/health"
+  
