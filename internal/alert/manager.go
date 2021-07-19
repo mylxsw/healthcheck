@@ -26,12 +26,13 @@ type Manager struct {
 	alerts map[string]*Alert
 	sche   *scheduler.Scheduler
 	queue  chan Event
+	conf   *healthcheck.GlobalConfig
 
 	lock sync.RWMutex
 }
 
-func NewManager(sche *scheduler.Scheduler, queueSize int64) *Manager {
-	return &Manager{alerts: make(map[string]*Alert), sche: sche, queue: make(chan Event, queueSize)}
+func NewManager(globalConf *healthcheck.GlobalConfig, sche *scheduler.Scheduler, queueSize int64) *Manager {
+	return &Manager{conf: globalConf, alerts: make(map[string]*Alert), sche: sche, queue: make(chan Event, queueSize)}
 }
 
 func (m *Manager) GetAlerts() []Alert {
@@ -56,6 +57,12 @@ func (m *Manager) Run(ctx context.Context) <-chan interface{} {
 				log.With(evt.Alert).Errorf("healthcheck for %s failed", evt.Alert.Healthcheck.ID)
 			} else {
 				log.With(evt.Alert).Infof("healthcheck for %s succeed", evt.Alert.Healthcheck.ID)
+			}
+
+			for i, alt := range m.conf.Alerts {
+				if err := alt.SendEvent(ctx, string(evt.Type), evt.Alert.Event); err != nil {
+					log.With(evt).Errorf("send event to alert channel %s-%d failed: %v", alt.Type, i, err)
+				}
 			}
 		}
 
@@ -135,22 +142,11 @@ func (m *Manager) collect() {
 }
 
 type Alert struct {
-	Healthcheck healthcheck.Healthcheck
-	// LastAliveTime 最后一次该心跳检测活跃的时间，该字段用于检测一个 Alert 是否已经失效了
-	LastAliveTime time.Time
-
-	// lastAlertTime 最后一次告警时间
-	LastAlertTime time.Time
-	// alertTimes 告警次数，从最后一次心跳丢失开始
-	AlertTimes int64
-
-	LastFailure     string
-	LastFailureTime time.Time
-	LastSuccessTime time.Time
+	healthcheck.Event
 }
 
 func NewAlert(hb healthcheck.Healthcheck) *Alert {
-	return &Alert{Healthcheck: hb}
+	return &Alert{Event: healthcheck.Event{Healthcheck: hb}}
 }
 
 func (alert *Alert) MarkSucceed(successTime time.Time) {

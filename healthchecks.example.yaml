@@ -49,4 +49,6 @@ discoveries:
     http:
       method: GET
       url: "tmpl: http://{{ .ServiceAddress }}:{{ .ServicePort }}/actuator/health"
-  
+alerts:
+- type: adanos
+  adanos_addr: http://127.0.0.1:29999

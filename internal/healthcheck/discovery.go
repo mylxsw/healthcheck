@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 	"text/template"
@@ -66,16 +67,16 @@ func (dis Discovery) init(conf GlobalConfig) Discovery {
 	return dis
 }
 
-func (dis Discovery) LoadHealthchecks(conf *GlobalConfig) ([]Healthcheck, error) {
+func (dis Discovery) LoadHealthchecks(ctx context.Context, conf *GlobalConfig) ([]Healthcheck, error) {
 	switch dis.Type {
 	case DiscoveryTypeConsul:
-		return dis.handleLoadHealthchecksFromConsul(conf)
+		return dis.handleLoadHealthchecksFromConsul(ctx, conf)
 	}
 
 	return []Healthcheck{}, nil
 }
 
-func (dis Discovery) handleLoadHealthchecksFromConsul(conf *GlobalConfig) ([]Healthcheck, error) {
+func (dis Discovery) handleLoadHealthchecksFromConsul(ctx context.Context, conf *GlobalConfig) ([]Healthcheck, error) {
 	client, err := api.NewClient(&api.Config{
 		Scheme:     dis.ConsulScheme,
 		Address:    dis.ConsulAddr,
@@ -129,6 +130,10 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(conf *GlobalConfig) ([]Hea
 			case HTTP:
 				hc.HTTP.Timeout = dis.Template.HTTP.Timeout
 
+				if dis.Template.Name == "" {
+					dis.Template.Name = "tmpl: {{ .ServiceName }}:{{ .ServiceAddress }}:{{ .ServicePort }}"
+				}
+
 				hc.Name, err = srvObj.parseTemplate(dis.Template.Name)
 				if err != nil {
 					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for name failed: %v", err)
@@ -137,6 +142,10 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(conf *GlobalConfig) ([]Hea
 				hc.HTTP.Method, err = srvObj.parseTemplate(dis.Template.HTTP.Method)
 				if err != nil {
 					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for http.method failed: %v", err)
+				}
+
+				if dis.Template.HTTP.URL == "" {
+					dis.Template.HTTP.URL = "http://{{ .ServiceAddress }}:{{ .ServicePort }}/health"
 				}
 
 				hc.HTTP.URL, err = srvObj.parseTemplate(dis.Template.HTTP.URL)
@@ -149,7 +158,7 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(conf *GlobalConfig) ([]Hea
 					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for http.body failed: %v", err)
 				}
 
-				hc.HTTP.SuccessRule, err = srvObj.parseTemplate(dis.Template.Name)
+				hc.HTTP.SuccessRule, err = srvObj.parseTemplate(dis.Template.HTTP.SuccessRule)
 				if err != nil {
 					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for http.success_rule failed: %v", err)
 				}
@@ -157,12 +166,12 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(conf *GlobalConfig) ([]Hea
 				hc.HTTP.Headers = make([]HTTPHeader, 0)
 				for _, header := range dis.Template.HTTP.Headers {
 					newHeader := HTTPHeader{}
-					newHeader.Key, err = srvObj.parseTemplate(dis.Template.Name)
+					newHeader.Key, err = srvObj.parseTemplate(header.Key)
 					if err != nil {
 						log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for http.headers.%s failed: %v", header.Key, err)
 					}
 
-					newHeader.Value, err = srvObj.parseTemplate(dis.Template.Name)
+					newHeader.Value, err = srvObj.parseTemplate(header.Value)
 					if err != nil {
 						log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for http.headers.%s=%s failed: %v", header.Key, header.Value, err)
 					}
@@ -186,11 +195,11 @@ type ConsulService struct {
 }
 
 func (filter ConsulService) parseTemplate(tmp string) (string, error) {
-	if !strings.HasPrefix(tmp, "tmpl: ") {
+	if !strings.HasPrefix(tmp, "tmpl:") {
 		return tmp, nil
 	}
 
-	content := strings.TrimPrefix(tmp, "tmpl: ")
+	content := strings.TrimSpace(strings.TrimPrefix(tmp, "tmpl:"))
 
 	parser, err := template.New("").Parse(content)
 	if err != nil {

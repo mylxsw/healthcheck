@@ -23,7 +23,7 @@ func (s Provider) Register(cc infra.Binder) {
 			var jobs map[string]HealthcheckJob
 			_ = coll.MustNew(sche.AllJobs()).AsMap(func(job HealthcheckJob) string { return job.Healthcheck.ID }).All(&jobs)
 			for _, dis := range globalConf.Discoveries {
-				hs, err := dis.LoadHealthchecks(globalConf)
+				hs, err := dis.LoadHealthchecks(ctx, globalConf)
 				if err != nil {
 					log.With(dis).Errorf("load healthchecks from discovery failed: %v", err)
 					continue
@@ -60,5 +60,8 @@ func (s Provider) Boot(cc infra.Resolver) {}
 func (s Provider) Daemon(ctx context.Context, app infra.Resolver) {
 	app.MustResolve(func(sche *Scheduler) {
 		<-sche.Run(ctx)
+		if log.DebugEnabled() {
+			log.Debugf("scheduler has been stopped")
+		}
 	})
 }

@@ -5,7 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/mylxsw/asteria/formatter"
+	"github.com/mylxsw/asteria/level"
 	"github.com/mylxsw/asteria/log"
+	"github.com/mylxsw/container"
 	"github.com/mylxsw/glacier/infra"
 	"github.com/mylxsw/glacier/starter/application"
 	"github.com/mylxsw/healthcheck/api"
@@ -32,6 +35,19 @@ func main() {
 		Usage: "健康检查配置文件路径",
 		Value: "healthchecks.yaml",
 	}))
+	app.AddFlags(altsrc.NewBoolFlag(cli.BoolFlag{
+		Name:  "debug",
+		Usage: "是否使用调试模式",
+	}))
+
+	app.BeforeServerStart(func(cc container.Container) error {
+		return cc.Resolve(func(c infra.FlagContext) {
+			if !c.Bool("debug") {
+				log.All().LogLevel(level.Info)
+				log.All().LogFormatter(formatter.NewJSONFormatter())
+			}
+		})
+	})
 
 	app.Singleton(func(c infra.FlagContext) *healthcheck.GlobalConfig {
 		confData, err := ioutil.ReadFile(c.String("healthcheck"))

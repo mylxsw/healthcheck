@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"gopkg.in/yaml.v2"
@@ -15,6 +16,7 @@ type GlobalConfig struct {
 	CheckInterval int64         `yaml:"check_interval" json:"check_interval"`
 	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
 	HTTPTimeout   int64         `yaml:"http_timeout" json:"http_timeout"`
+	Alerts        []AlertConfig `yaml:"alerts" json:"alerts"`
 }
 
 func (gc *GlobalConfig) init() error {
@@ -90,6 +92,12 @@ type Healthcheck struct {
 	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
 	CheckType     CheckType     `yaml:"check_type" json:"check_type"`
 	HTTP          CheckTypeHTTP `yaml:"http" json:"http"`
+}
+
+// String convert healthcheck to string
+func (hb Healthcheck) String() string {
+	data, _ := json.Marshal(hb)
+	return string(data)
 }
 
 // Check 发起健康检查
