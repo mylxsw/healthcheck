@@ -42,6 +42,10 @@ func (gc *GlobalConfig) init() error {
 
 	for i, hb := range gc.Healthchecks {
 		hb.Editable = false
+		if hb.Tags == nil {
+			gc.Healthchecks[i].Tags = make([]string, 0)
+		}
+
 		if hb.CheckType == "" {
 			return fmt.Errorf("invalid check_type")
 		}
@@ -88,6 +92,7 @@ type Healthcheck struct {
 	ID            string        `yaml:"-" json:"id"`
 	Editable      bool          `yaml:"-" json:"editable"`
 	Name          string        `yaml:"name" json:"name"`
+	Tags          []string      `yaml:"tags" json:"tags"`
 	CheckInterval int64         `yaml:"check_interval" json:"check_interval"`
 	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
 	CheckType     CheckType     `yaml:"check_type" json:"check_type"`

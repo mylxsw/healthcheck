@@ -28,6 +28,7 @@ func (ac AlertConfig) SendEvent(ctx context.Context, status string, evt Event) e
 	case AlertTypeAdanos:
 		adanosEvt := connector.NewEvent(evt.Healthcheck.String()).
 			WithOrigin("healthcheck").
+			WithTags(evt.Healthcheck.Tags...).
 			WithMeta("last_alert_time", evt.LastAlertTime.Format(time.RFC3339)).
 			WithMeta("alert_times", evt.AlertTimes).
 			WithMeta("last_failure", evt.LastFailure).

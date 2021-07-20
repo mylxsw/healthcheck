@@ -119,11 +119,16 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(ctx context.Context, conf 
 			// create healthcheck
 			hc := Healthcheck{
 				ID:            fmt.Sprintf("discovery-consul-%s", ins.ServiceID),
+				Tags:          make([]string, 0),
 				Editable:      true,
 				CheckInterval: dis.Template.CheckInterval,
 				LossThreshold: dis.Template.LossThreshold,
 				CheckType:     dis.Template.CheckType,
 				HTTP:          dis.Template.HTTP,
+			}
+
+			if tags != nil {
+				hc.Tags = append(hc.Tags, tags...)
 			}
 
 			switch dis.Template.CheckType {
