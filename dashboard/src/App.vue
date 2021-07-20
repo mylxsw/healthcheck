@@ -2,7 +2,7 @@
   <div id="app">
     <b-container fluid>
         <b-navbar type="dark" toggleable="md" variant="dark" class="mb-3" sticky>
-            <b-navbar-brand href="/">Tech Share <a href="https://github.com/mylxsw/healthcheck" class="text-white" style="font-size: 30%">0.1.0</a></b-navbar-brand>
+            <b-navbar-brand href="/">Healthcheck <a href="https://github.com/mylxsw/healthcheck" class="text-white" style="font-size: 30%">{{ version }}</a></b-navbar-brand>
             <b-collapse is-nav id="nav_dropdown_collapse">
                 <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex"></ul>
                 <b-navbar-nav>

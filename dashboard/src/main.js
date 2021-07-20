@@ -88,6 +88,5 @@ Vue.prototype.ErrorBox = function (message, cb) {
 
 new Vue({
     router,
-    store,
     render: h => h(App)
 }).$mount('#app');

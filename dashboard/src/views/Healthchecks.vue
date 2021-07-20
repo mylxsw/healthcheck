@@ -3,9 +3,8 @@
         <b-col>
             <b-card class="mb-2" no-body v-if="healthchecks.length > 0">
                 <b-table :items="healthchecks" :fields="healthchecks_fields">
-                    <template v-slot:cell(status)="row">
-                        <b-badge class="mr-2" variant="success" v-if="row.item.alert_times == 0">正常</b-badge>
-                        <b-badge class="mr-2" variant="danger"  v-if="row.item.alert_times > 0">失败</b-badge>
+                    <template v-slot:cell(last_success_time)="row">
+                        <date-time :value="row.item.last_success_time"></date-time>
                     </template>
                 </b-table>
             </b-card>
@@ -17,19 +16,20 @@
 <script>
 import axios from 'axios';
 import moment from 'moment';
+import DateTime from '../components/DateTime.vue';
 
 export default {
-        name: 'Shares',
-        components: {},
+        name: 'Healthchecks',
+        components: {DateTime},
         data() {
             return {
                 healthchecks_fields: [
-                    {key: 'id', label: 'ID'},
-                    {key: 'name', label: 'Name'},
-                    {key: 'check_interval', label: 'Check Interval'},
-                    {key: 'loss_threshold', label: 'Loss Threshold'},
-                    {key: 'check_type', label: 'Check Type'},
-                    {key: 'status', label: 'Status'},
+                    {key: 'healthcheck.id', label: 'ID'},
+                    {key: 'healthcheck.name', label: 'Name'},
+                    {key: 'healthcheck.check_interval', label: 'Check Interval'},
+                    {key: 'healthcheck.loss_threshold', label: 'Loss Threshold'},
+                    {key: 'healthcheck.check_type', label: 'Check Type'},
+                    {key: 'last_success_time', label: 'Last Success Time'},
                 ],
                 healthchecks: [],
             };

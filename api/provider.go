@@ -21,10 +21,9 @@ func (s Provider) Aggregates() []infra.Provider {
 	return []infra.Provider{
 		web.Provider(
 			listener.FlagContext("listen"),
-			web.SetRouteHandlerOption(s.routes),
 			web.SetMuxRouteHandlerOption(s.muxRoutes),
+			web.SetRouteHandlerOption(s.routes),
 			web.SetExceptionHandlerOption(s.exceptionHandler),
-			web.SetIgnoreLastSlashOption(true),
 		),
 	}
 }
@@ -60,7 +59,7 @@ func (s Provider) muxRoutes(cc infra.Resolver, router *mux.Router) {
 		// health check
 		router.PathPrefix("/health").Handler(HealthCheck{})
 
-		router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(FS(true))))
+		router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(FS(false))))
 	})
 }
 
