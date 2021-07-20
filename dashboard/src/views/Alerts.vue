@@ -10,6 +10,9 @@
                     <template v-slot:cell(last_check_time)="row">
                         <date-time :value="row.item.last_alive_time" title="Last Check Time"></date-time>
                     </template>
+                    <template v-slot:cell(check_type)="row">
+                        <b-badge variant="info">{{ row.item.healthcheck.check_type }}</b-badge>
+                    </template>
                     <template v-slot:cell(status)="row">
                         <b-badge class="mr-2" variant="success" v-if="row.item.alert_times === 0">OK</b-badge>
                         <b-badge class="mr-2" variant="danger"  v-if="row.item.alert_times > 0" @click="row.toggleDetails" style="cursor: pointer">FAIL</b-badge>
@@ -45,7 +48,7 @@ export default {
                 alert_fields: [
                     {key: 'id', label: 'ID/Name'},
                     {key: 'last_check_time', label: 'Last Check Time'},
-                    {key: 'healthcheck.check_type', label: 'Check Type'},
+                    {key: 'check_type', label: 'Check Type'},
                     {key: 'status', label: 'Status'},
                 ],
                 alerts: [],

@@ -28,7 +28,7 @@
     export default {
         data() {
             return {
-                version: 'v-0',
+                version: 'v-0.1.0',
                 failedCount: 0,
             }
         },

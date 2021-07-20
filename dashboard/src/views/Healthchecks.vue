@@ -48,7 +48,7 @@ export default {
                 healthchecks_fields: [
                     {key: 'id', label: 'ID/Name'},
                     {key: 'tags', label: 'Tags'},
-                    {key: 'check_interval', label: 'Check Interval/Threshold'},
+                    {key: 'check_interval', label: 'Interval/Threshold'},
                     {key: 'check_type', label: 'Check Type'},
                     {key: 'last_active_time', label: 'Last Active Time'},
                 ],

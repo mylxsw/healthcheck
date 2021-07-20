@@ -13,7 +13,7 @@ build:
 
 .PHONY: build-dist
 build-dist: esc-build
-	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o build/release/healthcheck main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -ldflags "$(LDFLAGS)" -o build/release/healthcheck main.go
 
 .PHONY: esc-build
 esc-build: build-dashboard
