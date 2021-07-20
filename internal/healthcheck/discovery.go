@@ -192,6 +192,7 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(ctx context.Context, conf 
 type ConsulService struct {
 	Tags []string
 	*api.CatalogService
+	pattern.Helpers
 }
 
 func (filter ConsulService) parseTemplate(tmp string) (string, error) {

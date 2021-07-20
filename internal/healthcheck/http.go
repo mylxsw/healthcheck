@@ -66,7 +66,9 @@ func (cth CheckTypeHTTP) Check(ctx context.Context, hb Healthcheck) error {
 	client := &http.Client{}
 	client.Timeout = time.Duration(cth.Timeout) * time.Second
 
-	log.With(hb).Debugf("send http health check")
+	if log.DebugEnabled() {
+		log.With(hb).Debugf("send http health check")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -84,6 +86,14 @@ func (cth CheckTypeHTTP) Check(ctx context.Context, hb Healthcheck) error {
 		Status:     resp.Status,
 		Body:       string(respBody),
 	}
+
+	if log.DebugEnabled() {
+		log.WithFields(log.Fields{
+			"healthcheck": hb,
+			"response":    checkData,
+		}).Debugf("http healthcheck response")
+	}
+
 	success, err := cth.SuccessRuleCheck(checkData)
 	if err != nil {
 		return err
@@ -98,6 +108,7 @@ func (cth CheckTypeHTTP) Check(ctx context.Context, hb Healthcheck) error {
 
 // SuccessRuleCheckData 请求结果判定
 type SuccessRuleCheckData struct {
+	pattern.Helpers
 	StatusCode int
 	Status     string
 	Body       string

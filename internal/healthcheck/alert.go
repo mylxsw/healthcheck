@@ -45,16 +45,16 @@ func (ac AlertConfig) SendEvent(ctx context.Context, status string, evt Event) e
 }
 
 type Event struct {
-	Healthcheck Healthcheck
+	Healthcheck Healthcheck `json:"healthcheck"`
 	// LastAliveTime 最后一次该心跳检测活跃的时间，该字段用于检测一个 Alert 是否已经失效了
-	LastAliveTime time.Time
+	LastAliveTime time.Time `json:"last_alive_time"`
 
 	// lastAlertTime 最后一次告警时间
-	LastAlertTime time.Time
+	LastAlertTime time.Time `json:"last_alert_time"`
 	// alertTimes 告警次数，从最后一次心跳丢失开始
-	AlertTimes int64
+	AlertTimes int64 `json:"alert_times"`
 
-	LastFailure     string
-	LastFailureTime time.Time
-	LastSuccessTime time.Time
+	LastFailure     string    `json:"last_failure"`
+	LastFailureTime time.Time `json:"last_failure_time"`
+	LastSuccessTime time.Time `json:"last_success_time"`
 }

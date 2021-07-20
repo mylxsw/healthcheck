@@ -18,8 +18,8 @@ const (
 )
 
 type Event struct {
-	Type  EventType
-	Alert Alert
+	Type  EventType `json:"type"`
+	Alert Alert     `json:"alert"`
 }
 
 type Manager struct {

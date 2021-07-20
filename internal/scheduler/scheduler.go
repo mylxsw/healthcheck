@@ -66,6 +66,10 @@ func (sc *Scheduler) RemoveJob(id string) {
 
 // AddJob 添加 job
 func (sc *Scheduler) AddJob(job *Job) {
+	if log.DebugEnabled() {
+		log.With(job.Healthcheck).Debugf("add healthcheck job: %s", job.Healthcheck.ID)
+	}
+
 	sc.lock.Lock()
 	defer sc.lock.Unlock()
 
