@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mylxsw/adanos-alert/pkg/connector"
+	"github.com/mylxsw/go-utils/failover"
 )
 
 // AlertType 告警类型
@@ -24,25 +25,30 @@ type AlertConfig struct {
 }
 
 func (ac AlertConfig) SendEvent(ctx context.Context, status string, evt Event) error {
-	switch ac.Type {
-	case AlertTypeAdanos:
-		adanosEvt := connector.NewEvent(evt.Healthcheck.String()).
-			WithOrigin("healthcheck").
-			WithTags(evt.Healthcheck.Tags...).
-			WithMeta("last_alert_time", evt.LastAlertTime.Format(time.RFC3339)).
-			WithMeta("alert_times", evt.AlertTimes).
-			WithMeta("last_failure", evt.LastFailure).
-			WithMeta("last_failure_time", evt.LastFailureTime.Format(time.RFC3339)).
-			WithMeta("last_success_time", evt.LastSuccessTime.Format(time.RFC3339)).
-			WithMeta("healthcheck_id", evt.Healthcheck.ID).
-			WithMeta("healthcheck_name", evt.Healthcheck.Name).
-			WithMeta("status", status)
+	retryer := failover.Retry(func(retryTimes int) error {
+		switch ac.Type {
+		case AlertTypeAdanos:
+			adanosEvt := connector.NewEvent(evt.Healthcheck.String()).
+				WithOrigin("healthcheck").
+				WithTags(evt.Healthcheck.Tags...).
+				WithMeta("last_alert_time", evt.LastAlertTime.Format(time.RFC3339)).
+				WithMeta("alert_times", evt.AlertTimes).
+				WithMeta("last_failure", evt.LastFailure).
+				WithMeta("last_failure_time", evt.LastFailureTime.Format(time.RFC3339)).
+				WithMeta("last_success_time", evt.LastSuccessTime.Format(time.RFC3339)).
+				WithMeta("healthcheck_id", evt.Healthcheck.ID).
+				WithMeta("healthcheck_name", evt.Healthcheck.Name).
+				WithMeta("status", status)
 
-		conn := connector.NewConnector(ac.AdanosToken, ac.AdanosAddr)
-		return conn.Send(ctx, adanosEvt)
-	}
+			conn := connector.NewConnector(ac.AdanosToken, ac.AdanosAddr)
+			return conn.Send(ctx, adanosEvt)
+		}
 
-	return fmt.Errorf("not support such alert type: %s", ac.Type)
+		return fmt.Errorf("not support such alert type: %s", ac.Type)
+	}, 3)
+
+	_, err := retryer.Run()
+	return err
 }
 
 type Event struct {

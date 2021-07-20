@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mylxsw/asteria/log"
+	"github.com/mylxsw/go-utils/failover"
 	"github.com/mylxsw/pattern"
 )
 
@@ -51,59 +52,64 @@ func (cth CheckTypeHTTP) init(timeout int64) CheckTypeHTTP {
 
 // Check 执行心跳检测
 func (cth CheckTypeHTTP) Check(ctx context.Context, hb Healthcheck) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(cth.Timeout)*time.Second)
-	defer cancel()
+	retryer := failover.Retry(func(retryTimes int) error {
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(cth.Timeout)*time.Second)
+		defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, cth.Method, cth.URL, strings.NewReader(cth.Body))
-	if err != nil {
-		return err
-	}
+		req, err := http.NewRequestWithContext(ctx, cth.Method, cth.URL, strings.NewReader(cth.Body))
+		if err != nil {
+			return err
+		}
 
-	for _, header := range cth.Headers {
-		req.Header.Add(header.Key, header.Value)
-	}
+		for _, header := range cth.Headers {
+			req.Header.Add(header.Key, header.Value)
+		}
 
-	client := &http.Client{}
-	client.Timeout = time.Duration(cth.Timeout) * time.Second
+		client := &http.Client{}
+		client.Timeout = time.Duration(cth.Timeout) * time.Second
 
-	if log.DebugEnabled() {
-		log.With(hb).Debugf("send http health check")
-	}
+		if log.DebugEnabled() {
+			log.With(hb).Debugf("send http health check")
+		}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
 
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
+		defer resp.Body.Close()
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
 
-	checkData := SuccessRuleCheckData{
-		StatusCode: resp.StatusCode,
-		Status:     resp.Status,
-		Body:       string(respBody),
-	}
+		checkData := SuccessRuleCheckData{
+			StatusCode: resp.StatusCode,
+			Status:     resp.Status,
+			Body:       string(respBody),
+		}
 
-	if log.DebugEnabled() {
-		log.WithFields(log.Fields{
-			"healthcheck": hb,
-			"response":    checkData,
-		}).Debugf("http healthcheck response")
-	}
+		if log.DebugEnabled() {
+			log.WithFields(log.Fields{
+				"healthcheck": hb,
+				"response":    checkData,
+			}).Debugf("http healthcheck response")
+		}
 
-	success, err := cth.SuccessRuleCheck(checkData)
-	if err != nil {
-		return err
-	}
+		success, err := cth.SuccessRuleCheck(checkData)
+		if err != nil {
+			return err
+		}
 
-	if success {
-		return nil
-	}
+		if success {
+			return nil
+		}
 
-	return fmt.Errorf("success check return negative: %s", checkData.String())
+		return fmt.Errorf("success check return negative: %s", checkData.String())
+	}, 3)
+
+	_, err := retryer.Run()
+	return err
 }
 
 // SuccessRuleCheckData 请求结果判定

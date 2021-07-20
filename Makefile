@@ -8,5 +8,12 @@ build:
 	go build -ldflags "$(LDFLAGS)" -o build/debug/healthcheck main.go
 
 .PHONY: build-dist
-build-dist:
+build-dist: esc-build
 	CGO_ENABLED=0 GOOS=linux go build -ldflags "$(LDFLAGS)" -o build/release/healthcheck main.go
+
+esc-build:
+	esc -pkg api -o api/static.go -prefix=dashboard/dist dashboard/dist
+
+.PHONY: run-dashboard
+run-dashboard:
+	cd dashboard && npm run serve
