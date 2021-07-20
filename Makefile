@@ -3,8 +3,12 @@ GitCommit := $(shell git rev-parse HEAD)
 DIR := $(shell pwd)
 LDFLAGS := -s -w -X main.Version=$(Version) -X main.GitCommit=$(GitCommit)
 
+.PHONY: run
+run: build
+	./build/debug/healthcheck --debug
+
 .PHONY: build
-build: esc-build
+build: 
 	go build -ldflags "$(LDFLAGS)" -o build/debug/healthcheck main.go
 
 .PHONY: build-dist

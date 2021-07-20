@@ -6,7 +6,10 @@
             <b-collapse is-nav id="nav_dropdown_collapse">
                 <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex"></ul>
                 <b-navbar-nav>
-                    <b-nav-item href="/#/" exact>Alerts</b-nav-item>
+                    <b-nav-item href="/#/" exact>
+                      Alerts
+                      <b-badge variant="danger" v-if="failedCount > 0" v-b-tooltip.hover title="Failed Count">{{ failedCount }}</b-badge>
+                    </b-nav-item>
                     <b-nav-item href="/#/healthchecks" exact>Healthchecks</b-nav-item>
                 </b-navbar-nav>
             </b-collapse>
@@ -15,20 +18,31 @@
             <router-view/>
         </div>
     </b-container>
-    
+
   </div>
 </template>
 
 <script>
+    import axios from "axios";
+
     export default {
         data() {
             return {
                 version: 'v-0',
+                failedCount: 0,
             }
         },
         methods: {
         },
         mounted() {
+            let self = this;
+            let updateFailedCount = function () {
+                axios.get('/api/alerts/failed-count/').then(resp => {
+                    self.failedCount = resp.data.count;
+                }).catch(error => {this.ToastError(error)});
+            };
+            updateFailedCount();
+            window.setInterval(updateFailedCount, 10000);
         },
         beforeMount() {
         }

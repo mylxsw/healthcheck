@@ -2,6 +2,7 @@ package alert
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -35,15 +36,16 @@ func NewManager(globalConf *healthcheck.GlobalConfig, sche *scheduler.Scheduler,
 	return &Manager{conf: globalConf, alerts: make(map[string]*Alert), sche: sche, queue: make(chan Event, queueSize)}
 }
 
-func (m *Manager) GetAlerts() []Alert {
-	m.lock.RLock()
-	defer m.lock.RUnlock()
+func (m *Manager) GetAlerts() Alerts {
+	alerts := make(Alerts, 0)
 
-	alerts := make([]Alert, 0)
+	m.lock.RLock()
 	for _, al := range m.alerts {
 		alerts = append(alerts, *al)
 	}
+	m.lock.RUnlock()
 
+	sort.Sort(alerts)
 	return alerts
 }
 
@@ -169,4 +171,18 @@ func (alert *Alert) MarkFailed(failureTime time.Time, failureReason string) {
 
 	alert.AlertTimes = 1
 	alert.LastAlertTime = time.Now()
+}
+
+type Alerts []Alert
+
+func (alerts Alerts) Len() int {
+	return len(alerts)
+}
+
+func (alerts Alerts) Less(i, j int) bool {
+	return alerts[i].Healthcheck.ID < alerts[j].Healthcheck.ID
+}
+
+func (alerts Alerts) Swap(i, j int) {
+	alerts[i], alerts[j] = alerts[j], alerts[i]
 }

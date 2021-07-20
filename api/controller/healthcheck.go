@@ -21,7 +21,7 @@ func (ctl HealthcheckController) Register(router web.Router) {
 	})
 }
 
-func (ctl HealthcheckController) HealthChecks(sche *scheduler.Scheduler) []scheduler.HealthcheckJob {
+func (ctl HealthcheckController) HealthChecks(sche *scheduler.Scheduler) scheduler.HealthcheckJobs {
 	return sche.AllJobs()
 }
 

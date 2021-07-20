@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -32,15 +33,16 @@ func (sc *Scheduler) PrintStatus() {
 }
 
 // AllJobs return all jobs
-func (sc *Scheduler) AllJobs() []HealthcheckJob {
-	sc.lock.RLock()
-	defer sc.lock.RUnlock()
+func (sc *Scheduler) AllJobs() HealthcheckJobs {
+	jobs := make(HealthcheckJobs, 0)
 
-	jobs := make([]HealthcheckJob, 0)
+	sc.lock.RLock()
 	for _, job := range sc.Jobs {
 		jobs = append(jobs, job.HealthcheckJob)
 	}
+	sc.lock.RUnlock()
 
+	sort.Sort(jobs)
 	return jobs
 }
 

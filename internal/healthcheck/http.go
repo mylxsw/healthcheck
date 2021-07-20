@@ -24,7 +24,7 @@ type HTTPHeader struct {
 type CheckTypeHTTP struct {
 	Method      string       `yaml:"method" json:"method"`
 	URL         string       `yaml:"url" json:"url"`
-	Headers     []HTTPHeader `yaml:"headers" json:"headers"`
+	Headers     []HTTPHeader `yaml:"headers" json:"-"`
 	Body        string       `yaml:"body" json:"body"`
 	Timeout     int64        `yaml:"timeout" json:"timeout"`
 	SuccessRule string       `yaml:"success_rule" json:"success_rule"`

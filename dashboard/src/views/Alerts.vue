@@ -3,31 +3,48 @@
         <b-col>
             <b-card class="mb-2" no-body v-if="alerts.length > 0">
                 <b-table :items="alerts" :fields="alert_fields">
+                    <template v-slot:cell(id)="row">
+                        <b v-b-tooltip.hover title="Name">{{ row.item.healthcheck.name }}</b><br />
+                        <i style="color: #808890;" v-b-tooltip.hover title="ID">{{ row.item.healthcheck.id }}</i>
+                    </template>
+                    <template v-slot:cell(last_check_time)="row">
+                        <date-time :value="row.item.last_alive_time" title="Last Check Time"></date-time>
+                    </template>
                     <template v-slot:cell(status)="row">
-                        <b-badge class="mr-2" variant="success" v-if="row.item.alert_times == 0">正常</b-badge>
-                        <b-badge class="mr-2" variant="danger"  v-if="row.item.alert_times > 0">失败</b-badge>
+                        <b-badge class="mr-2" variant="success" v-if="row.item.alert_times === 0">OK</b-badge>
+                        <b-badge class="mr-2" variant="danger"  v-if="row.item.alert_times > 0" @click="row.toggleDetails" style="cursor: pointer">FAIL</b-badge>
+                        <br/>
+                        <date-time :value="row.item.last_failure_time" title="Last Failure Time" v-if="row.item.alert_times > 0"></date-time>
+                        <date-time :value="row.item.last_success_time" title="Last Recovery Time" v-if="row.item.alert_times === 0"></date-time>
+                    </template>
+
+                    <template #row-details="row">
+                        <b-card>
+                            <b-row class="mb-2 pl-3 pr-3">
+                                <pre class="text-danger">{{ row.item.last_failure }}</pre>
+                            </b-row>
+                            <b-button size="sm" @click="row.toggleDetails">Hide</b-button>
+                        </b-card>
                     </template>
                 </b-table>
             </b-card>
-            <b-card class="mb-2" v-if="alerts.length == 0">当前没有相关告警</b-card>
+            <b-card class="mb-2" v-if="alerts.length == 0">No Data</b-card>
         </b-col>
     </b-row>
 </template>
 
 <script>
 import axios from 'axios';
-import moment from 'moment';
+import DateTime from '../components/DateTime.vue';
 
 export default {
         name: 'Alerts',
-        components: {},
+        components: {DateTime},
         data() {
             return {
                 alert_fields: [
-                    {key: 'healthcheck.id', label: 'ID'},
-                    {key: 'healthcheck.name', label: 'Name'},
-                    {key: 'healthcheck.check_interval', label: 'Check Interval'},
-                    {key: 'healthcheck.loss_threshold', label: 'Loss Threshold'},
+                    {key: 'id', label: 'ID/Name'},
+                    {key: 'last_check_time', label: 'Last Check Time'},
                     {key: 'healthcheck.check_type', label: 'Check Type'},
                     {key: 'status', label: 'Status'},
                 ],
@@ -35,6 +52,7 @@ export default {
             };
         },
         computed: {
+
         },
         watch: {
             '$route': 'reload',

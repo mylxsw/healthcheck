@@ -15,6 +15,20 @@ type Job struct {
 	lock sync.RWMutex
 }
 
+type HealthcheckJobs []HealthcheckJob
+
+func (jobs HealthcheckJobs) Len() int {
+	return len(jobs)
+}
+
+func (jobs HealthcheckJobs) Less(i, j int) bool {
+	return jobs[i].Healthcheck.ID < jobs[i].Healthcheck.ID
+}
+
+func (jobs HealthcheckJobs) Swap(i, j int) {
+	jobs[i], jobs[j] = jobs[j], jobs[i]
+}
+
 type HealthcheckJob struct {
 	Healthcheck     healthcheck.Healthcheck `json:"healthcheck"`
 	LastActiveTime  time.Time               `json:"last_active_time"`
