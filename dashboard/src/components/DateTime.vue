@@ -15,7 +15,7 @@
                 if (t === '0001-01-01T00:00:00Z') {
                     return '-';
                 }
-                return moment(t).format('YYYY-MM-DD HH:mm');
+                return moment(t).format('YYYY-MM-DD HH:mm:ss');
             }
         }
     }
