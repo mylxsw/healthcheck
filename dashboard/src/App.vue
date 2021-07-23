@@ -43,6 +43,10 @@
             };
             updateFailedCount();
             window.setInterval(updateFailedCount, 10000);
+
+            axios.get('/api/inspect/version').then(response => {
+                this.version = response.data.version;
+            });
         },
         beforeMount() {
         }

@@ -50,6 +50,7 @@ func (s Provider) routes(cc infra.Resolver, router web.Router, mw web.RequestMid
 		controller.NewAlertController(cc),
 		controller.NewHealthcheckController(cc),
 		controller.NewPushController(cc),
+		controller.NewInspectController(cc, config.Get(cc)),
 	)
 }
 
