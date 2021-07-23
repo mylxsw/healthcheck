@@ -82,6 +82,18 @@ func (gc *GlobalConfig) init() error {
 		}
 	}
 
+	for i, alt := range gc.Alerts {
+		if alt.Timeout == 0 {
+			alt.Timeout = 30
+		}
+
+		if alt.HTTPHeaders == nil {
+			alt.HTTPHeaders = make([]HTTPHeader, 0)
+		}
+
+		gc.Alerts[i] = alt
+	}
+
 	return nil
 }
 
