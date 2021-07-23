@@ -12,10 +12,10 @@ import (
 
 // CheckTypeICMP ICMP Ping 类型的心跳检测
 type CheckTypeICMP struct {
-	Host        string `yaml:"host" json:"host"`
-	Count       int64  `yaml:"count" json:"count"`
-	Timeout     int64  `yaml:"timeout" json:"timeout"`
-	SuccessRule string `yaml:"success_rule" json:"success_rule"`
+	Host        string `yaml:"host" json:"host,omitempty"`
+	Count       int64  `yaml:"count" json:"count,omitempty"`
+	Timeout     int64  `yaml:"timeout" json:"timeout,omitempty"`
+	SuccessRule string `yaml:"success_rule" json:"success_rule,omitempty"`
 }
 
 func (cth CheckTypeICMP) init(timeout int64) CheckTypeICMP {

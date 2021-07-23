@@ -26,6 +26,7 @@
                             <b-row class="mb-2 pl-3 pr-3">
                                 <pre v-if="row.item.healthcheck.check_type === 'http'">{{ row.item.healthcheck.http }}</pre>
                                 <pre v-if="row.item.healthcheck.check_type === 'ping'">{{ row.item.healthcheck.ping }}</pre>
+                                <pre v-if="row.item.healthcheck.check_type === 'push'">PUSH Address: {{ getPushURL(row.item.healthcheck.id) }}</pre>
                             </b-row>
                             <b-button size="sm" @click="row.toggleDetails">Hide</b-button>
                         </b-card>
@@ -62,10 +63,14 @@ export default {
             '$route': 'reload',
         },
         methods: {
+            getPushURL(id) {
+                return document.location.protocol + "//" + document.location.host + "/api/push/" + id;
+            },
             typeBadge(typ) {
                 switch (typ) {
                     case "http": return "info";
                     case "ping": return "primary";
+                    case "push": return "success";
                 }
 
                 return "";

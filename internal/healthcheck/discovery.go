@@ -22,13 +22,13 @@ const (
 
 // Discovery 服务发现
 type Discovery struct {
-	Type         DiscoveryType `yaml:"type" json:"type"`
-	ConsulScheme string        `yaml:"consul_scheme" json:"consul_scheme"`
-	ConsulAddr   string        `yaml:"consul_addr" json:"consul_addr"`
-	ConsulToken  string        `yaml:"consul_token" json:"consul_token"`
-	ConsulDC     string        `yaml:"consul_dc" json:"consul_dc"`
-	Filter       string        `yaml:"filter" json:"filter"`
-	Template     Healthcheck   `yaml:"template" json:"template"`
+	Type         DiscoveryType `yaml:"type" json:"type,omitempty"`
+	ConsulScheme string        `yaml:"consul_scheme" json:"consul_scheme,omitempty"`
+	ConsulAddr   string        `yaml:"consul_addr" json:"consul_addr,omitempty"`
+	ConsulToken  string        `yaml:"consul_token" json:"-"`
+	ConsulDC     string        `yaml:"consul_dc" json:"consul_dc,omitempty"`
+	Filter       string        `yaml:"filter" json:"filter,omitempty"`
+	Template     Healthcheck   `yaml:"template" json:"template,omitempty"`
 }
 
 func (dis Discovery) init(conf GlobalConfig) Discovery {

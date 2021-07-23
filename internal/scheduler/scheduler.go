@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"sync"
 	"time"
@@ -30,6 +31,27 @@ func (sc *Scheduler) PrintStatus() {
 	for _, job := range sc.Jobs {
 		log.With(job).Debugf("job status")
 	}
+}
+
+// UpdateJobStatus update a job's status
+func (sc *Scheduler) UpdateJobStatus(id string) error {
+	var target *Job
+
+	sc.lock.RLock()
+	for _, job := range sc.Jobs {
+		if job.Healthcheck.ID == id {
+			target = job
+			break
+		}
+	}
+	sc.lock.RUnlock()
+
+	if target == nil {
+		return errors.New("no such job")
+	}
+
+	target.UpdateJobStatus()
+	return nil
 }
 
 // AllJobs return all jobs

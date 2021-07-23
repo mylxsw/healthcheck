@@ -49,6 +49,7 @@ func (s Provider) routes(cc infra.Resolver, router web.Router, mw web.RequestMid
 		"/api",
 		controller.NewAlertController(cc),
 		controller.NewHealthcheckController(cc),
+		controller.NewPushController(cc),
 	)
 }
 

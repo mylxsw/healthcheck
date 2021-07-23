@@ -68,7 +68,7 @@ func (gc *GlobalConfig) init() error {
 			gc.Healthchecks[i].LossThreshold = gc.LossThreshold
 		}
 
-		gc.Healthchecks[i].ID = fmt.Sprintf("check-%s-%d", hb.CheckType, i)
+		gc.Healthchecks[i].ID = fmt.Sprintf("check-%s", hb.CheckType)
 		if hb.Name == "" {
 			gc.Healthchecks[i].Name = gc.Healthchecks[i].ID
 		}
@@ -110,25 +110,31 @@ const (
 	// HTTP http 类型的健康检查
 	HTTP CheckType = "http"
 	PING CheckType = "ping"
+	PUSH CheckType = "push"
 )
 
 // Healthcheck 健康检查对象
 type Healthcheck struct {
-	ID            string        `yaml:"-" json:"id"`
-	Editable      bool          `yaml:"-" json:"editable"`
-	Name          string        `yaml:"name" json:"name"`
-	Tags          []string      `yaml:"tags" json:"tags"`
-	CheckInterval int64         `yaml:"check_interval" json:"check_interval"`
-	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
-	CheckType     CheckType     `yaml:"check_type" json:"check_type"`
-	HTTP          CheckTypeHTTP `yaml:"http" json:"http"`
-	PING          CheckTypeICMP `yaml:"ping" json:"ping"`
+	ID            string        `yaml:"-" json:"id,omitempty"`
+	Editable      bool          `yaml:"-" json:"editable,omitempty"`
+	Name          string        `yaml:"name" json:"name,omitempty"`
+	Tags          []string      `yaml:"tags" json:"tags,omitempty"`
+	CheckInterval int64         `yaml:"check_interval" json:"check_interval,omitempty"`
+	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold,omitempty"`
+	CheckType     CheckType     `yaml:"check_type" json:"check_type,omitempty"`
+	HTTP          CheckTypeHTTP `yaml:"http" json:"http,omitempty"`
+	PING          CheckTypeICMP `yaml:"ping" json:"ping,omitempty"`
 }
 
 // String convert healthcheck to string
 func (hb Healthcheck) String() string {
 	data, _ := json.Marshal(hb)
 	return string(data)
+}
+
+// Schedulable return whether the Healthcheck is schedulable
+func (hb Healthcheck) Schedulable() bool {
+	return hb.CheckType != PUSH
 }
 
 // Check 发起健康检查

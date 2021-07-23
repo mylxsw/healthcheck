@@ -19,8 +19,8 @@ const (
 )
 
 type Event struct {
-	Type  EventType `json:"type"`
-	Alert Alert     `json:"alert"`
+	Type  EventType `json:"type,omitempty"`
+	Alert Alert     `json:"alert,omitempty"`
 }
 
 type Manager struct {
@@ -114,7 +114,7 @@ func (m *Manager) handleHealthCheck() {
 			}
 		} else if !alert.IsFailed() && job.Failed() {
 			// 成功 -> 失败
-			alert.MarkFailed(job.LastFailureTime, job.LastFailure)
+			alert.MarkFailed(job.LastSuccessTime, job.LastFailure)
 			select {
 			case m.queue <- Event{Type: EventTypeFail, Alert: *alert}:
 			default:
@@ -154,7 +154,6 @@ func NewAlert(hb healthcheck.Healthcheck) *Alert {
 func (alert *Alert) MarkSucceed(successTime time.Time) {
 	alert.AlertTimes = 0
 	alert.LastSuccessTime = successTime
-
 }
 
 func (alert *Alert) IsFailed() bool {
@@ -163,7 +162,6 @@ func (alert *Alert) IsFailed() bool {
 
 func (alert *Alert) MarkFailed(failureTime time.Time, failureReason string) {
 	alert.LastFailure = failureReason
-	alert.LastFailureTime = failureTime
 
 	if alert.AlertTimes > 0 {
 		return

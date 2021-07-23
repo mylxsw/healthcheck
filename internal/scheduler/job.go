@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -30,18 +31,21 @@ func (jobs HealthcheckJobs) Swap(i, j int) {
 }
 
 type HealthcheckJob struct {
-	Healthcheck     healthcheck.Healthcheck `json:"healthcheck"`
-	LastActiveTime  time.Time               `json:"last_active_time"`
-	LastFinishTime  time.Time               `json:"last_finish_time"`
-	LastSuccessTime time.Time               `json:"last_success_time"`
-	LastFailure     string                  `json:"last_failure"`
-	LastFailureTime time.Time               `json:"last_failure_time"`
+	Healthcheck     healthcheck.Healthcheck `json:"healthcheck,omitempty"`
+	LastActiveTime  time.Time               `json:"last_active_time,omitempty"`
+	LastFinishTime  time.Time               `json:"last_finish_time,omitempty"`
+	LastSuccessTime time.Time               `json:"last_success_time,omitempty"`
+	LastFailure     string                  `json:"last_failure,omitempty"`
 }
 
 // NewJob create a new job
 func NewJob(hc healthcheck.Healthcheck) *Job {
 	return &Job{
-		HealthcheckJob: HealthcheckJob{Healthcheck: hc, LastSuccessTime: time.Now()},
+		HealthcheckJob: HealthcheckJob{
+			Healthcheck:     hc,
+			LastSuccessTime: time.Now(),
+			LastFailure:     fmt.Sprintf("no heartbeat received since %s", time.Now()),
+		},
 	}
 }
 
@@ -55,7 +59,7 @@ func (job *Job) Schedulable() bool {
 	job.lock.RLock()
 	defer job.lock.RUnlock()
 
-	return time.Now().After(job.LastActiveTime.Add(time.Duration(job.Healthcheck.CheckInterval) * time.Second))
+	return job.Healthcheck.Schedulable() && time.Now().After(job.LastActiveTime.Add(time.Duration(job.Healthcheck.CheckInterval)*time.Second))
 }
 
 // Run 执行任务
@@ -77,7 +81,6 @@ func (job *Job) Run(ctx context.Context) {
 	if err := job.Healthcheck.Check(ctx); err != nil {
 		job.lock.Lock()
 		job.LastFailure = err.Error()
-		job.LastFailureTime = time.Now()
 		job.lock.Unlock()
 
 		log.With(job).Errorf("handle %s health check [%s] failed: %v", job.Healthcheck.CheckType, job.Healthcheck.Name, err)
@@ -87,4 +90,16 @@ func (job *Job) Run(ctx context.Context) {
 		job.lock.Unlock()
 	}
 
+}
+
+// UpdateJobStatus update job status
+func (job *Job) UpdateJobStatus() {
+	job.lock.Lock()
+	defer job.lock.Unlock()
+
+	job.LastActiveTime = time.Now()
+	job.LastFinishTime = job.LastActiveTime
+	job.LastSuccessTime = job.LastActiveTime
+
+	job.LastFailure = fmt.Sprintf("no heartbeat received since %s", job.LastActiveTime)
 }

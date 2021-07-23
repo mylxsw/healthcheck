@@ -16,18 +16,18 @@ import (
 
 // HTTPHeader http 请求头
 type HTTPHeader struct {
-	Key   string `yaml:"key" json:"key"`
-	Value string `yaml:"value" json:"value"`
+	Key   string `yaml:"key" json:"key,omitempty"`
+	Value string `yaml:"value" json:"value,omitempty"`
 }
 
 // CheckTypeHTTP HTTP 类型的心跳检测
 type CheckTypeHTTP struct {
-	Method      string       `yaml:"method" json:"method"`
-	URL         string       `yaml:"url" json:"url"`
+	Method      string       `yaml:"method" json:"method,omitempty"`
+	URL         string       `yaml:"url" json:"url,omitempty"`
 	Headers     []HTTPHeader `yaml:"headers" json:"-"`
-	Body        string       `yaml:"body" json:"body"`
-	Timeout     int64        `yaml:"timeout" json:"timeout"`
-	SuccessRule string       `yaml:"success_rule" json:"success_rule"`
+	Body        string       `yaml:"body" json:"body,omitempty"`
+	Timeout     int64        `yaml:"timeout" json:"timeout,omitempty"`
+	SuccessRule string       `yaml:"success_rule" json:"success_rule,omitempty"`
 }
 
 func (cth CheckTypeHTTP) init(timeout int64) CheckTypeHTTP {

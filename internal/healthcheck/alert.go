@@ -58,7 +58,6 @@ func (ac AlertConfig) sendAdanosAlert(ctx context.Context, status string, evt Ev
 		WithMeta("last_alert_time", evt.LastAlertTime.Format(time.RFC3339)).
 		WithMeta("alert_times", evt.AlertTimes).
 		WithMeta("last_failure", evt.LastFailure).
-		WithMeta("last_failure_time", evt.LastFailureTime.Format(time.RFC3339)).
 		WithMeta("last_success_time", evt.LastSuccessTime.Format(time.RFC3339)).
 		WithMeta("healthcheck_id", evt.Healthcheck.ID).
 		WithMeta("healthcheck_name", evt.Healthcheck.Name).
@@ -115,6 +114,5 @@ type Event struct {
 	AlertTimes int64 `json:"alert_times"`
 
 	LastFailure     string    `json:"last_failure"`
-	LastFailureTime time.Time `json:"last_failure_time"`
 	LastSuccessTime time.Time `json:"last_success_time"`
 }

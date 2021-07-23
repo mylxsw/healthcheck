@@ -17,8 +17,7 @@
                         <b-badge class="mr-2" variant="success" v-if="row.item.alert_times === 0">OK</b-badge>
                         <b-badge class="mr-2" variant="danger"  v-if="row.item.alert_times > 0" @click="row.toggleDetails" style="cursor: pointer">FAIL</b-badge>
                         <br/>
-                        <date-time :value="row.item.last_failure_time" title="Last Failure Time" v-if="row.item.alert_times > 0"></date-time>
-                        <date-time :value="row.item.last_success_time" title="Last Recovery Time" v-if="row.item.alert_times === 0"></date-time>
+                        <date-time :value="row.item.last_success_time" title="Last Success Time"></date-time>
                     </template>
 
                     <template #row-details="row">
@@ -65,6 +64,7 @@ export default {
                 switch (typ) {
                     case "http": return "info";
                     case "ping": return "primary";
+                    case "push": return "success";
                 }
 
                 return "";
