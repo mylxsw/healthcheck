@@ -10,16 +10,22 @@ import (
 
 // GlboalConfig is a global configuration object
 type GlobalConfig struct {
+	Version       string        `yaml:"version" json:"version"`
 	Healthchecks  []Healthcheck `yaml:"healthchecks" json:"healthchecks"`
 	Discoveries   []Discovery   `yaml:"discoveries" json:"discoveries"`
 	WorkerNum     int           `yaml:"worker_num" json:"worker_num"`
 	CheckInterval int64         `yaml:"check_interval" json:"check_interval"`
 	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
 	HTTPTimeout   int64         `yaml:"http_timeout" json:"http_timeout"`
+	PINGTimeout   int64         `yaml:"ping_timeout" json:"ping_timeout"`
 	Alerts        []AlertConfig `yaml:"alerts" json:"alerts"`
 }
 
 func (gc *GlobalConfig) init() error {
+	if gc.Version == "" {
+		gc.Version = "1"
+	}
+
 	if gc.WorkerNum == 0 {
 		gc.WorkerNum = 3
 	}
@@ -34,6 +40,10 @@ func (gc *GlobalConfig) init() error {
 
 	if gc.HTTPTimeout == 0 {
 		gc.HTTPTimeout = 60
+	}
+
+	if gc.PINGTimeout == 0 {
+		gc.PINGTimeout = 1
 	}
 
 	if gc.Healthchecks == nil {
@@ -66,6 +76,8 @@ func (gc *GlobalConfig) init() error {
 		switch hb.CheckType {
 		case HTTP:
 			gc.Healthchecks[i].HTTP = hb.HTTP.init(gc.HTTPTimeout)
+		case PING:
+			gc.Healthchecks[i].PING = hb.PING.init(gc.PINGTimeout)
 		default:
 		}
 	}
@@ -85,6 +97,7 @@ type CheckType string
 const (
 	// HTTP http 类型的健康检查
 	HTTP CheckType = "http"
+	PING CheckType = "ping"
 )
 
 // Healthcheck 健康检查对象
@@ -97,6 +110,7 @@ type Healthcheck struct {
 	LossThreshold int64         `yaml:"loss_threshold" json:"loss_threshold"`
 	CheckType     CheckType     `yaml:"check_type" json:"check_type"`
 	HTTP          CheckTypeHTTP `yaml:"http" json:"http"`
+	PING          CheckTypeICMP `yaml:"ping" json:"ping"`
 }
 
 // String convert healthcheck to string
@@ -110,6 +124,8 @@ func (hb Healthcheck) Check(ctx context.Context) error {
 	switch hb.CheckType {
 	case HTTP:
 		return hb.HTTP.Check(ctx, hb)
+	case PING:
+		return hb.PING.Check(ctx, hb)
 	}
 
 	return nil

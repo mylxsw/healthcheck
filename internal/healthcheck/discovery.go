@@ -185,6 +185,25 @@ func (dis Discovery) handleLoadHealthchecksFromConsul(ctx context.Context, conf 
 				}
 
 				hc.HTTP = hc.HTTP.init(conf.HTTPTimeout)
+			case PING:
+				hc.PING.Count = dis.Template.PING.Count
+				hc.PING.Timeout = dis.Template.PING.Timeout
+
+				if dis.Template.PING.Host == "" {
+					dis.Template.PING.Host = "tmpl: {{ .ServiceName }}"
+				}
+
+				hc.PING.Host, err = srvObj.parseTemplate(dis.Template.PING.Host)
+				if err != nil {
+					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for ping.host failed: %v", err)
+				}
+
+				hc.PING.SuccessRule, err = srvObj.parseTemplate(dis.Template.PING.SuccessRule)
+				if err != nil {
+					log.With(log.Fields{"service": srvObj, "discovery": dis}).Errorf("parse template for ping.success_rule failed: %v", err)
+				}
+
+				hc.PING = hc.PING.init(conf.PINGTimeout)
 			}
 
 			healthchecks = append(healthchecks, hc)

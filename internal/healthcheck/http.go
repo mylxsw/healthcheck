@@ -96,7 +96,7 @@ func (cth CheckTypeHTTP) Check(ctx context.Context, hb Healthcheck) error {
 			}).Debugf("http healthcheck response")
 		}
 
-		success, err := cth.SuccessRuleCheck(checkData)
+		success, err := successRuleCheck(cth.SuccessRule, checkData)
 		if err != nil {
 			return err
 		}
@@ -126,9 +126,9 @@ func (srcd SuccessRuleCheckData) String() string {
 	return string(data)
 }
 
-// SuccessRuleCheck 请求结果判定
-func (cth CheckTypeHTTP) SuccessRuleCheck(data SuccessRuleCheckData) (bool, error) {
-	matcher, err := pattern.NewMatcher(cth.SuccessRule, data)
+// successRuleCheck 请求结果判定
+func successRuleCheck(rule string, data interface{}) (bool, error) {
+	matcher, err := pattern.NewMatcher(rule, data)
 	if err != nil {
 		return false, err
 	}

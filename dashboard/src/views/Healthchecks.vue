@@ -14,7 +14,7 @@
                         <i style="color: #808890;" v-b-tooltip.hover title="ID">{{ row.item.healthcheck.id }}</i>
                     </template>
                     <template v-slot:cell(check_type)="row">
-                        <b-badge variant="info" @click="row.toggleDetails" style="cursor: pointer" v-b-tooltip.hover title="Show Details">{{ row.item.healthcheck.check_type }}</b-badge>
+                        <b-badge :variant="typeBadge(row.item.healthcheck.check_type)" @click="row.toggleDetails" style="cursor: pointer" v-b-tooltip.hover title="Show Details">{{ row.item.healthcheck.check_type }}</b-badge>
                     </template>
                     <template v-slot:cell(tags)="row">
                         <div :key="index" v-for="(tag, index) in row.item.healthcheck.tags">
@@ -25,6 +25,7 @@
                         <b-card>
                             <b-row class="mb-2 pl-3 pr-3">
                                 <pre v-if="row.item.healthcheck.check_type === 'http'">{{ row.item.healthcheck.http }}</pre>
+                                <pre v-if="row.item.healthcheck.check_type === 'ping'">{{ row.item.healthcheck.ping }}</pre>
                             </b-row>
                             <b-button size="sm" @click="row.toggleDetails">Hide</b-button>
                         </b-card>
@@ -61,6 +62,14 @@ export default {
             '$route': 'reload',
         },
         methods: {
+            typeBadge(typ) {
+                switch (typ) {
+                    case "http": return "info";
+                    case "ping": return "primary";
+                }
+
+                return "";
+            },
             reload() {
                 axios.get('/api/healthchecks/').then(resp => {
                     this.healthchecks = resp.data;

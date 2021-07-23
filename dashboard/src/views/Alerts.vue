@@ -11,7 +11,7 @@
                         <date-time :value="row.item.last_alive_time" title="Last Check Time"></date-time>
                     </template>
                     <template v-slot:cell(check_type)="row">
-                        <b-badge variant="info">{{ row.item.healthcheck.check_type }}</b-badge>
+                        <b-badge :variant="typeBadge(row.item.healthcheck.check_type)">{{ row.item.healthcheck.check_type }}</b-badge>
                     </template>
                     <template v-slot:cell(status)="row">
                         <b-badge class="mr-2" variant="success" v-if="row.item.alert_times === 0">OK</b-badge>
@@ -61,6 +61,14 @@ export default {
             '$route': 'reload',
         },
         methods: {
+            typeBadge(typ) {
+                switch (typ) {
+                    case "http": return "info";
+                    case "ping": return "primary";
+                }
+
+                return "";
+            },
             reload() {
                 axios.get('/api/alerts/').then(resp => {
                     this.alerts = resp.data;

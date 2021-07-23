@@ -20,6 +20,11 @@ healthchecks:
   check_type: http
   http:
     url: http://192.168.10.45:5815/health
+- name: router-gateway
+  check_type: ping
+  ping:
+    host: 192.168.1.1
+    count: 3
 discoveries:
 - type: consul
   consul_scheme: http

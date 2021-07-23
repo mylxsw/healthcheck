@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/PuerkitoBio/goquery v1.7.1 // indirect
+	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/consul/api v1.9.1
 	github.com/itchyny/gojq v0.12.4 // indirect
