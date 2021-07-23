@@ -57,3 +57,8 @@ discoveries:
 alerts:
 - type: adanos
   adanos_addr: http://127.0.0.1:29999
+- type: http
+  http_addr: http://127.0.0.1
+  http_headers:
+  - key: ContentType
+    value: application/json
