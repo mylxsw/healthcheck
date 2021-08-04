@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -85,6 +86,15 @@ func (gc *GlobalConfig) init() error {
 	for i, alt := range gc.Alerts {
 		if alt.Timeout == 0 {
 			alt.Timeout = 30
+		}
+
+		if alt.SilentPeriod == "" {
+			alt.SilentPeriod = "1m"
+		}
+
+		_, err := time.ParseDuration(alt.SilentPeriod)
+		if err != nil {
+			return fmt.Errorf("invalid alert.silent_period: %v", err)
 		}
 
 		if alt.HTTPHeaders == nil {

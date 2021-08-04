@@ -49,11 +49,17 @@ func (m *Manager) GetAlerts() Alerts {
 	return alerts
 }
 
+type alertStatus struct {
+	LastTime time.Time
+	Status   EventType
+}
+
 func (m *Manager) Run(ctx context.Context) <-chan interface{} {
 	stopped := make(chan interface{})
 	safeClose := make(chan interface{})
 
 	go func() {
+		alertStatuses := make([]alertStatus, len(m.conf.Alerts))
 		for evt := range m.queue {
 			if evt.Type == EventTypeFail {
 				log.With(evt.Alert).Errorf("healthcheck for %s failed", evt.Alert.Healthcheck.ID)
@@ -62,9 +68,18 @@ func (m *Manager) Run(ctx context.Context) <-chan interface{} {
 			}
 
 			for i, alt := range m.conf.Alerts {
+				// 对于持续失败的任务，如果在静默期内，告警取消
+				silentPeriod, _ := time.ParseDuration(alt.SilentPeriod)
+				if evt.Type == EventTypeFail && alertStatuses[i].Status == EventTypeFail && time.Since(alertStatuses[i].LastTime) < silentPeriod {
+					continue
+				}
+
 				if err := alt.SendEvent(ctx, string(evt.Type), evt.Alert.Event); err != nil {
 					log.With(evt).Errorf("send event to alert channel %s-%d failed: %v", alt.Type, i, err)
 				}
+
+				alertStatuses[i].Status = evt.Type
+				alertStatuses[i].LastTime = time.Now()
 			}
 		}
 
@@ -112,7 +127,7 @@ func (m *Manager) handleHealthCheck() {
 			case m.queue <- Event{Type: EventTypeSuccess, Alert: *alert}:
 			default:
 			}
-		} else if !alert.IsFailed() && job.Failed() {
+		} else if job.Failed() {
 			// 成功 -> 失败
 			alert.MarkFailed(job.LastSuccessTime, job.LastFailure)
 			select {
@@ -163,11 +178,7 @@ func (alert *Alert) IsFailed() bool {
 func (alert *Alert) MarkFailed(failureTime time.Time, failureReason string) {
 	alert.LastFailure = failureReason
 
-	if alert.AlertTimes > 0 {
-		return
-	}
-
-	alert.AlertTimes = 1
+	alert.AlertTimes += 1
 	alert.LastAlertTime = time.Now()
 }
 

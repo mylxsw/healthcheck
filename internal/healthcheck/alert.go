@@ -18,18 +18,24 @@ type AlertType string
 
 const (
 	// AlertTypeAdanos 基于 Adanos 的告警通知
-	AlertTypeAdanos AlertType = "adanos"
-	AlertTypeHTTP   AlertType = "http"
+	AlertTypeAdanos   AlertType = "adanos"
+	AlertTypeHTTP     AlertType = "http"
+	AlertTypeStdout   AlertType = "stdout"
+	AlertTypeErrorlog AlertType = "errorlog"
 )
 
 // AlertConfig 告警配置
 type AlertConfig struct {
-	Type        AlertType    `yaml:"type" json:"type"`
-	AdanosAddr  string       `yaml:"adanos_addr" json:"adanos_addr"`
-	AdanosToken string       `yaml:"adanos_token" json:"adanos_token"`
+	Type         AlertType `yaml:"type" json:"type"`
+	SilentPeriod string    `yaml:"silent_period" json:"silent_period"`
+
+	AdanosAddr  string `yaml:"adanos_addr" json:"adanos_addr"`
+	AdanosToken string `yaml:"adanos_token" json:"adanos_token"`
+
 	HTTPAddr    string       `yaml:"http_addr" json:"http_addr"`
 	HTTPHeaders []HTTPHeader `yaml:"http_header" json:"http_header"`
-	Timeout     int64        `yaml:"timeout" json:"timeout"`
+
+	Timeout int64 `yaml:"timeout" json:"timeout"`
 }
 
 func (ac AlertConfig) SendEvent(ctx context.Context, status string, evt Event) error {
@@ -39,6 +45,10 @@ func (ac AlertConfig) SendEvent(ctx context.Context, status string, evt Event) e
 			return ac.sendAdanosAlert(ctx, status, evt)
 		case AlertTypeHTTP:
 			return ac.sendHTTPAlert(ctx, status, evt)
+		case AlertTypeStdout:
+			return ac.sendStdoutAlert(ctx, status, evt)
+		case AlertTypeErrorlog:
+			return ac.sendErrorlogAlert(ctx, status, evt)
 		}
 
 		return fmt.Errorf("not support such alert type: %s", ac.Type)
@@ -65,6 +75,20 @@ func (ac AlertConfig) sendAdanosAlert(ctx context.Context, status string, evt Ev
 
 	conn := connector.NewConnector(ac.AdanosToken, ac.AdanosAddr)
 	return conn.Send(ctx, adanosEvt)
+}
+
+func (ac AlertConfig) sendStdoutAlert(ctx context.Context, status string, evt Event) error {
+	data, _ := json.Marshal(map[string]interface{}{
+		"event":  evt,
+		"status": status,
+	})
+	fmt.Printf("---\n%s\n", string(data))
+	return nil
+}
+
+func (ac AlertConfig) sendErrorlogAlert(ctx context.Context, status string, evt Event) error {
+	log.WithFields(log.Fields{"event": evt, "status": status}).Errorf("alert message")
+	return nil
 }
 
 func (ac AlertConfig) sendHTTPAlert(ctx context.Context, status string, evt Event) error {
