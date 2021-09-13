@@ -2,3 +2,5 @@ build/
 .idea/
 .vscode/
 healthchecks.yaml
+.docker-build-tag
+docker-build.sh
