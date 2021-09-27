@@ -69,7 +69,7 @@ func (gc *GlobalConfig) init() error {
 			gc.Healthchecks[i].LossThreshold = gc.LossThreshold
 		}
 
-		gc.Healthchecks[i].ID = fmt.Sprintf("check-%s", hb.CheckType)
+		gc.Healthchecks[i].ID = fmt.Sprintf("check-%s-%d", hb.CheckType, i)
 		if hb.Name == "" {
 			gc.Healthchecks[i].Name = gc.Healthchecks[i].ID
 		}

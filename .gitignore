@@ -4,3 +4,4 @@ build/
 healthchecks.yaml
 .docker-build-tag
 docker-build.sh
+k8s.yaml

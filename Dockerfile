@@ -8,6 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w -X main.Versi
 
 FROM ubuntu:20.10
 WORKDIR /root
+COPY --from=build /golang/healthcheck/healthchecks.example.yaml ./healthchecks.yaml
 COPY --from=build /golang/healthcheck/healthcheck .
 EXPOSE 10101
-CMD ["./healthcheck", "--listen", ":10101"]
+CMD ["./healthcheck", "--listen", ":10101", "--healthcheck", "./healthchecks.yaml"]
