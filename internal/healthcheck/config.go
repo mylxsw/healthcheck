@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GlboalConfig is a global configuration object
+// GlobalConfig is a global configuration object
 type GlobalConfig struct {
 	Version       string        `yaml:"version" json:"version"`
 	Healthchecks  []Healthcheck `yaml:"healthchecks" json:"healthchecks"`
@@ -136,13 +136,13 @@ type Healthcheck struct {
 	PING          CheckTypeICMP `yaml:"ping" json:"ping,omitempty"`
 }
 
-// String convert healthcheck to string
+// String convert health-check to string
 func (hb Healthcheck) String() string {
 	data, _ := json.Marshal(hb)
 	return string(data)
 }
 
-// Schedulable return whether the Healthcheck is schedulable
+// Schedulable return whether the Healthcheck is schedule
 func (hb Healthcheck) Schedulable() bool {
 	return hb.CheckType != PUSH
 }

@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
 	"github.com/mylxsw/asteria/log"
@@ -16,8 +13,7 @@ import (
 	"github.com/mylxsw/healthcheck/internal/config"
 	"github.com/mylxsw/healthcheck/internal/healthcheck"
 	"github.com/mylxsw/healthcheck/internal/scheduler"
-	"github.com/urfave/cli"
-	"github.com/urfave/cli/altsrc"
+	"io/ioutil"
 )
 
 var Version = "1.0"
@@ -25,20 +21,9 @@ var GitCommit = "5dbef13fb456f51a5d29464d"
 
 func main() {
 	app := application.Create(fmt.Sprintf("%s %s", Version, GitCommit))
-	app.AddFlags(altsrc.NewStringFlag(cli.StringFlag{
-		Name:  "listen",
-		Usage: "服务监听地址",
-		Value: "127.0.0.1:10101",
-	}))
-	app.AddFlags(altsrc.NewStringFlag(cli.StringFlag{
-		Name:  "healthcheck",
-		Usage: "健康检查配置文件路径",
-		Value: "healthchecks.yaml",
-	}))
-	app.AddFlags(altsrc.NewBoolFlag(cli.BoolFlag{
-		Name:  "debug",
-		Usage: "是否使用调试模式",
-	}))
+	app.AddStringFlag("listen", "127.0.0.1:10101", "服务监听地址")
+	app.AddStringFlag("healthcheck", "healthchecks.yaml", "健康检查配置文件路径")
+	app.AddBoolFlag("debug", "是否使用调试模式")
 
 	app.BeforeServerStart(func(cc container.Container) error {
 		return cc.Resolve(func(c infra.FlagContext) {
@@ -74,7 +59,5 @@ func main() {
 
 	app.Provider(scheduler.Provider{}, alert.Provider{}, api.Provider{})
 
-	if err := app.Run(os.Args); err != nil {
-		log.Errorf("exit with error: %s", err)
-	}
+	application.MustRun(app)
 }

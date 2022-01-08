@@ -29,7 +29,6 @@ func (s Provider) Aggregates() []infra.Provider {
 }
 
 func (s Provider) Register(app infra.Binder) {}
-func (s Provider) Boot(app infra.Resolver)   {}
 
 func (s Provider) exceptionHandler(ctx web.Context, err interface{}) web.Response {
 	log.Errorf("error: %v, call stack: %s", err, debug.Stack())

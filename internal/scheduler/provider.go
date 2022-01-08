@@ -19,7 +19,7 @@ func (s Provider) Register(cc infra.Binder) {
 			sche.AddJob(NewJob(hb))
 		}
 
-		addDiscoveriedJobs := func() {
+		addDiscoveredJobs := func() {
 			var jobs map[string]HealthcheckJob
 			_ = coll.MustNew(sche.AllJobs()).AsMap(func(job HealthcheckJob) string { return job.Healthcheck.ID }).All(&jobs)
 			for _, dis := range globalConf.Discoveries {
@@ -37,7 +37,7 @@ func (s Provider) Register(cc infra.Binder) {
 			}
 		}
 
-		addDiscoveriedJobs()
+		addDiscoveredJobs()
 		go func() {
 			ticker := time.NewTicker(5 * 60 * time.Second)
 			defer ticker.Stop()
@@ -47,7 +47,7 @@ func (s Provider) Register(cc infra.Binder) {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					addDiscoveriedJobs()
+					addDiscoveredJobs()
 				}
 			}
 		}()
@@ -55,7 +55,6 @@ func (s Provider) Register(cc infra.Binder) {
 		return sche
 	})
 }
-func (s Provider) Boot(cc infra.Resolver) {}
 
 func (s Provider) Daemon(ctx context.Context, app infra.Resolver) {
 	app.MustResolve(func(sche *Scheduler) {

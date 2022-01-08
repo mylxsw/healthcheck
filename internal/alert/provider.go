@@ -16,7 +16,6 @@ func (s Provider) Register(cc infra.Binder) {
 		return NewManager(globalConf, sche, 1024)
 	})
 }
-func (s Provider) Boot(cc infra.Resolver) {}
 
 func (s Provider) Daemon(ctx context.Context, app infra.Resolver) {
 	app.MustResolve(func(m *Manager) {
