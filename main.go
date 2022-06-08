@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
 	"github.com/mylxsw/asteria/log"
@@ -13,14 +16,15 @@ import (
 	"github.com/mylxsw/healthcheck/internal/config"
 	"github.com/mylxsw/healthcheck/internal/healthcheck"
 	"github.com/mylxsw/healthcheck/internal/scheduler"
-	"io/ioutil"
 )
 
 var Version = "1.0"
 var GitCommit = "5dbef13fb456f51a5d29464d"
 
 func main() {
-	app := application.Create(fmt.Sprintf("%s %s", Version, GitCommit))
+	app := application.Create(fmt.Sprintf("%s %s", Version, GitCommit)).
+		WithShutdownTimeoutFlagSupport(3 * time.Second)
+
 	app.AddStringFlag("listen", "127.0.0.1:10101", "服务监听地址")
 	app.AddStringFlag("healthcheck", "healthchecks.yaml", "健康检查配置文件路径")
 	app.AddBoolFlag("debug", "是否使用调试模式")
