@@ -23,7 +23,7 @@ func (jobs HealthcheckJobs) Len() int {
 }
 
 func (jobs HealthcheckJobs) Less(i, j int) bool {
-	return jobs[i].Healthcheck.ID < jobs[j].Healthcheck.ID
+	return (jobs[i].Healthcheck.Name + jobs[i].Healthcheck.ID) < (jobs[j].Healthcheck.Name + jobs[j].Healthcheck.ID)
 }
 
 func (jobs HealthcheckJobs) Swap(i, j int) {

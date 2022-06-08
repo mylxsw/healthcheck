@@ -189,7 +189,7 @@ func (alerts Alerts) Len() int {
 }
 
 func (alerts Alerts) Less(i, j int) bool {
-	return alerts[i].Healthcheck.ID < alerts[j].Healthcheck.ID
+	return (alerts[i].Healthcheck.Name + alerts[i].Healthcheck.ID) < (alerts[j].Healthcheck.Name + alerts[j].Healthcheck.ID)
 }
 
 func (alerts Alerts) Swap(i, j int) {

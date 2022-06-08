@@ -69,7 +69,12 @@ func (gc *GlobalConfig) init() error {
 			gc.Healthchecks[i].LossThreshold = gc.LossThreshold
 		}
 
-		gc.Healthchecks[i].ID = fmt.Sprintf("check-%s-%d", hb.CheckType, i)
+		if hb.ID == "" {
+			gc.Healthchecks[i].ID = fmt.Sprintf("check-%s-%d", hb.CheckType, i)
+		} else {
+			gc.Healthchecks[i].ID = hb.ID
+		}
+
 		if hb.Name == "" {
 			gc.Healthchecks[i].Name = gc.Healthchecks[i].ID
 		}
@@ -125,7 +130,7 @@ const (
 
 // Healthcheck 健康检查对象
 type Healthcheck struct {
-	ID            string        `yaml:"-" json:"id,omitempty"`
+	ID            string        `yaml:"id,omitempty" json:"id,omitempty"`
 	Editable      bool          `yaml:"-" json:"editable,omitempty"`
 	Name          string        `yaml:"name" json:"name,omitempty"`
 	Tags          []string      `yaml:"tags" json:"tags,omitempty"`
