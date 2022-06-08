@@ -41,7 +41,10 @@ func (m *Manager) GetAlerts() Alerts {
 
 	m.lock.RLock()
 	for _, al := range m.alerts {
-		alerts = append(alerts, *al)
+		// 只返回当前处于告警状态的任务以及恢复后至今小于1小时的任务
+		if al.AlertTimes > 0 || time.Now().Sub(al.LastSuccessTime) < 60*time.Minute {
+			alerts = append(alerts, *al)
+		}
 	}
 	m.lock.RUnlock()
 
