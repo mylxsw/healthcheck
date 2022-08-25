@@ -57,3 +57,9 @@ AvgRtt time.Duration
 // this pinger.
 StdDevRtt time.Duration
 ```
+
+push 方式示例
+
+```bash
+* * * * * root sh -c "ps -ef|grep 'org.apache.zookeeper.server.quorum.QuorumPeerMain' | grep -v grep" && curl -fsS --retry 3 -o /dev/null http://127.0.0.1:10101/api/push/53ebb81fcefb95cbdc4edca02b47ef28
+```
