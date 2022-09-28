@@ -26,7 +26,9 @@
                             <b-row class="mb-2 pl-3 pr-3">
                                 <pre v-if="row.item.healthcheck.check_type === 'http'">{{ row.item.healthcheck.http }}</pre>
                                 <pre v-if="row.item.healthcheck.check_type === 'ping'">{{ row.item.healthcheck.ping }}</pre>
-                                <pre v-if="row.item.healthcheck.check_type === 'push'">PUSH Address: {{ getPushURL(row.item.healthcheck.id) }}</pre>
+                                <pre v-if="row.item.healthcheck.check_type === 'push'">PUSH Address: {{ getPushURL(row.item.healthcheck.id) }}
+CURL: curl -fsS --retry 3 -o /dev/null {{ getPushURL(row.item.healthcheck.id) }}
+DEMO: sh -c "ps -ef|grep 'nginx' | grep -v grep" && curl -fsS --retry 3 -o /dev/null {{ getPushURL(row.item.healthcheck.id) }}</pre>
                             </b-row>
                             <b-button size="sm" @click="row.toggleDetails">Hide</b-button>
                         </b-card>
