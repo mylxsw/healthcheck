@@ -8,9 +8,8 @@ import (
 	"github.com/mylxsw/asteria/formatter"
 	"github.com/mylxsw/asteria/level"
 	"github.com/mylxsw/asteria/log"
-	"github.com/mylxsw/container"
 	"github.com/mylxsw/glacier/infra"
-	"github.com/mylxsw/glacier/starter/application"
+	"github.com/mylxsw/glacier/starter/app"
 	"github.com/mylxsw/healthcheck/api"
 	"github.com/mylxsw/healthcheck/internal/alert"
 	"github.com/mylxsw/healthcheck/internal/config"
@@ -22,15 +21,14 @@ var Version = "1.0"
 var GitCommit = "5dbef13fb456f51a5d29464d"
 
 func main() {
-	app := application.Create(fmt.Sprintf("%s %s", Version, GitCommit)).
-		WithShutdownTimeoutFlagSupport(3 * time.Second)
+	ins := app.Create(fmt.Sprintf("%s %s", Version, GitCommit), 3).WithShutdownTimeoutFlag(3 * time.Second)
 
-	app.AddStringFlag("listen", "127.0.0.1:10101", "服务监听地址")
-	app.AddStringFlag("healthcheck", "healthchecks.yaml", "健康检查配置文件路径")
-	app.AddBoolFlag("debug", "是否使用调试模式")
+	ins.AddStringFlag("listen", "127.0.0.1:10101", "服务监听地址")
+	ins.AddStringFlag("healthcheck", "healthchecks.yaml", "健康检查配置文件路径")
+	ins.AddBoolFlag("debug", "是否使用调试模式")
 
-	app.BeforeServerStart(func(cc container.Container) error {
-		return cc.Resolve(func(c infra.FlagContext) {
+	ins.BeforeServerStop(func(resolver infra.Resolver) error {
+		return resolver.Resolve(func(c infra.FlagContext) {
 			if !c.Bool("debug") {
 				log.All().LogLevel(level.Info)
 				log.All().LogFormatter(formatter.NewJSONFormatter())
@@ -38,7 +36,7 @@ func main() {
 		})
 	})
 
-	app.Singleton(func(c infra.FlagContext) *healthcheck.GlobalConfig {
+	ins.Singleton(func(c infra.FlagContext) *healthcheck.GlobalConfig {
 		confData, err := ioutil.ReadFile(c.String("healthcheck"))
 		if err != nil {
 			panic(fmt.Errorf("read config file from %s failed: %v", c.String("healthcheck"), err))
@@ -53,7 +51,7 @@ func main() {
 		return globalConf
 	})
 
-	app.Singleton(func(c infra.FlagContext) *config.Config {
+	ins.Singleton(func(c infra.FlagContext) *config.Config {
 		return &config.Config{
 			Version:   Version,
 			GitCommit: GitCommit,
@@ -61,7 +59,7 @@ func main() {
 		}
 	})
 
-	app.Provider(scheduler.Provider{}, alert.Provider{}, api.Provider{})
+	ins.Provider(scheduler.Provider{}, alert.Provider{}, api.Provider{})
 
-	application.MustRun(app)
+	app.MustRun(ins)
 }
